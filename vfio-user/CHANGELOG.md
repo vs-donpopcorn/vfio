@@ -4,6 +4,9 @@
 
 ## Added
 
+- Compile-time assertions that no protocol message has padding, so a
+  structure that would put uninitialised bytes on the wire fails the build.
+
 ## Fixed
 
 # [v0.1.5]

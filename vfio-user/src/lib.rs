@@ -224,6 +224,32 @@ unsafe impl ByteValued for SetIrqs {}
 // SAFETY: data structure only contain a series of integers
 unsafe impl ByteValued for DeviceReset {}
 
+// Every message is sent and received as its raw bytes, so a padding byte
+// would put uninitialised memory on the wire. For a `repr(C)` structure
+// `size_of` is the sum of its fields plus any padding, so each assertion
+// below holds exactly when the structure has none. Padding within
+// `vfio_region_info` is checked by the bindings themselves.
+const _: () = {
+    assert!(size_of::<Header>() == size_of::<u16>() * 2 + size_of::<u32>() * 3);
+    assert!(size_of::<Version>() == size_of::<Header>() + size_of::<u16>() * 2);
+    assert!(
+        size_of::<DmaMap>() == size_of::<Header>() + size_of::<u32>() * 2 + size_of::<u64>() * 3
+    );
+    assert!(
+        size_of::<DmaUnmap>() == size_of::<Header>() + size_of::<u32>() * 2 + size_of::<u64>() * 2
+    );
+    assert!(size_of::<DeviceGetInfo>() == size_of::<Header>() + size_of::<u32>() * 4);
+    assert!(
+        size_of::<DeviceGetRegionInfo>() == size_of::<Header>() + size_of::<vfio_region_info>()
+    );
+    assert!(
+        size_of::<RegionAccess>() == size_of::<Header>() + size_of::<u64>() + size_of::<u32>() * 2
+    );
+    assert!(size_of::<GetIrqInfo>() == size_of::<Header>() + size_of::<u32>() * 4);
+    assert!(size_of::<SetIrqs>() == size_of::<Header>() + size_of::<u32>() * 5);
+    assert!(size_of::<DeviceReset>() == size_of::<Header>());
+};
+
 #[derive(Serialize, Deserialize, Debug)]
 struct Capabilities {
     #[serde(default = "default_max_msg_fds")]
